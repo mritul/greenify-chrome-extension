@@ -75,3 +75,21 @@ p{
     cursor: pointer;
     background-color: rgb(115, 209, 71);
 }
+
+.invalid{
+    color : red;
+    margin-top : 5px;
+    font-size: 15px;
+    display: none;
+}
+
+a{
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+#loginPage{
+    margin-top: 20px;
+    text-decoration: underline;
+
+}

@@ -10,7 +10,9 @@
       "<all_urls>",
       "activeTab",
       "responseHeaders",
-      "storage"
+      "storage",
+      "tabs",
+      "http://localhost:3000/api/login"
     ],
     "background": {
       "service_worker": "background.js"
