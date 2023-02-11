@@ -25,7 +25,7 @@
 // );
 
 const MapOfWebsites = new Map();
-
+const map = "map";
 let requestSize = 0;
 let responseSize = 0;
 
@@ -34,7 +34,6 @@ urlFilter = "<all_urls>";
 chrome.webRequest.onBeforeRequest.addListener(
   function (details) {
     var doesMapContainWebsite = MapOfWebsites.has(details.initiator);
-    console.log(details);
     if (details.requestBody) {
       if (doesMapContainWebsite) {
         requestSize = details.requestBody.raw
@@ -47,10 +46,27 @@ chrome.webRequest.onBeforeRequest.addListener(
       } else {
         MapOfWebsites.set(details.initiator, requestSize);
       }
-
-      console.log(MapOfWebsites);
     }
   },
   { urls: [urlFilter] },
   ["extraHeaders", "requestBody"]
 );
+
+setInterval(() => {
+  chrome.storage.sync.set(
+    { map: JSON.stringify(Array.from(MapOfWebsites.entries())) },
+    function () {
+      console.log("Saved Successfully");
+    }
+  );
+}, 5000);
+
+//New Feature
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
+    const newMap = new Map(JSON.parse(newValue));
+    console.log("Value Changed....");
+    console.log("New Value is : ", newMap);
+  }
+});

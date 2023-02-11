@@ -9,13 +9,14 @@
       "background",
       "<all_urls>",
       "activeTab",
-      "responseHeaders"
+      "responseHeaders",
+      "storage"
     ],
     "background": {
       "service_worker": "background.js"
     },
     "browser_action": {
-      "default_popup": "popup.html",
+      "default_popup": "popup/popup.html",
       "default_icon":"assets/logo.png"
     }
   }
