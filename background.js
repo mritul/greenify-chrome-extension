@@ -24,6 +24,8 @@
 //   ["responseHeaders"]
 // );
 
+const MapOfWebsites = new Map();
+
 let requestSize = 0;
 let responseSize = 0;
 
@@ -31,26 +33,24 @@ urlFilter = "<all_urls>";
 
 chrome.webRequest.onBeforeRequest.addListener(
   function (details) {
+    var doesMapContainWebsite = MapOfWebsites.has(details.initiator);
     console.log(details);
     if (details.requestBody) {
-      requestSize += details.requestBody.raw
-        .map((chunk) => chunk.bytes.byteLength)
-        .reduce((sum, length) => sum + length, 0);
-      console.log("Request size:", requestSize);
+      if (doesMapContainWebsite) {
+        requestSize = details.requestBody.raw
+          .map((chunk) => chunk.bytes.byteLength)
+          .reduce((sum, length) => sum + length, 0);
+        MapOfWebsites.set(
+          details.initiator,
+          MapOfWebsites.get(details.initiator) + requestSize
+        );
+      } else {
+        MapOfWebsites.set(details.initiator, requestSize);
+      }
+
+      console.log(MapOfWebsites);
     }
   },
   { urls: [urlFilter] },
   ["extraHeaders", "requestBody"]
 );
-
-// chrome.webRequest.onCompleted.addListener(
-//   function (details) {
-//     responseSize += details.responseHeaders
-//       .map((header) => header.value)
-//       .join("").length;
-//     responseSize += details.bodySize;
-//     console.log("Response size:", responseSize);
-//   },
-//   { urls: [urlFilter] },
-//   ["responseHeaders"]
-// );

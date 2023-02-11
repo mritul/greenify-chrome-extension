@@ -8,7 +8,8 @@
       "webRequestBlocking",
       "background",
       "<all_urls>",
-      "activeTab"
+      "activeTab",
+      "responseHeaders"
     ],
     "background": {
       "service_worker": "background.js"
