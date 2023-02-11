@@ -1,52 +1,35 @@
-// let responseSize = 0;
-
-// //Request Header Size
-// chrome.webRequest.onSendHeaders.addListener(
-//   function (details) {
-//     console.log(
-//       "Request Header size:",
-//       details.requestHeaders.map((header) => header.value).join("").length
-//     );
-//   },
-//   { urls: ["<all_urls>"] },
-//   ["requestHeaders"]
-// );
-
-// // Response Header Size
-// chrome.webRequest.onHeadersReceived.addListener(
-//   function (details) {
-//     console.log(
-//       "Response Header size:",
-//       details.responseHeaders.map((header) => header.value).join("").length
-//     );
-//   },
-//   { urls: ["<all_urls>"] },
-//   ["responseHeaders"]
-// );
-
 const MapOfWebsites = new Map();
 const map = "map";
+const totalSize = "totalSize";
 let requestSize = 0;
-let responseSize = 0;
+let totalResponseSize;
+
+chrome.storage.sync.get(["totalSize"], function (result) {
+  totalResponseSize = result.totalSize !== undefined ? result.totalSize : 0;
+});
 
 urlFilter = "<all_urls>";
 
 chrome.webRequest.onBeforeRequest.addListener(
   function (details) {
     var doesMapContainWebsite = MapOfWebsites.has(details.initiator);
-    if (details.requestBody) {
-      if (doesMapContainWebsite) {
-        requestSize = details.requestBody.raw
-          .map((chunk) => chunk.bytes.byteLength)
-          .reduce((sum, length) => sum + length, 0);
-        MapOfWebsites.set(
-          details.initiator,
-          MapOfWebsites.get(details.initiator) + requestSize
-        );
-      } else {
-        MapOfWebsites.set(details.initiator, requestSize);
+    try {
+      if (details.requestBody && details.requestBody.raw) {
+        if (doesMapContainWebsite) {
+          console.log(details.requestBody.raw);
+          requestSize = details.requestBody.raw
+            .map((chunk) => chunk.bytes.byteLength)
+            .reduce((sum, length) => sum + length, 0);
+          totalResponseSize += requestSize;
+          MapOfWebsites.set(
+            details.initiator,
+            MapOfWebsites.get(details.initiator) + requestSize
+          );
+        } else {
+          MapOfWebsites.set(details.initiator, requestSize);
+        }
       }
-    }
+    } catch (e) {}
   },
   { urls: [urlFilter] },
   ["extraHeaders", "requestBody"]
@@ -55,18 +38,30 @@ chrome.webRequest.onBeforeRequest.addListener(
 setInterval(() => {
   chrome.storage.sync.set(
     { map: JSON.stringify(Array.from(MapOfWebsites.entries())) },
-    function () {
-      console.log("Saved Successfully");
-    }
+    function () {}
+  );
+
+  chrome.storage.sync.set(
+    { ["totalSize"]: totalResponseSize },
+    function (result) {}
   );
 }, 5000);
 
-//New Feature
+// chrome.tabs.onActivated.addListener(function (activeInfo) {
+//   chrome.tabs.get(activeInfo.tabId, function (tab) {
+//     const currTab = tab.url.toString();
+//     console.log(tab);
+//     console.log(MapOfWebsites.entries());
+//   });
+// });
 
-chrome.storage.onChanged.addListener((changes, namespace) => {
-  for (let [key, { oldValue, newValue }] of Object.entries(changes)) {
-    const newMap = new Map(JSON.parse(newValue));
-    console.log("Value Changed....");
-    console.log("New Value is : ", newMap);
-  }
+chrome.tabs.onActivated.addListener(function (activeInfo) {
+  chrome.tabs.get(activeInfo.tabId, function (tab) {
+    const currTab = tab.url.toString();
+    console.log(MapOfWebsites);
+    for (let [key, value] of Object.entries(MapOfWebsites)) {
+      url.innerHTML = key;
+      console.log(currTab, MapofWebsites[key]);
+    }
+  });
 });
